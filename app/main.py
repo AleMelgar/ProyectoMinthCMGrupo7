@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.db.database import Base, engine
+from app.db import models  # noqa: F401 — registra los modelos en Base.metadata
 from app.api import evaluations, goals, kpis, results, reports, minthcm_proxy
 
 Base.metadata.create_all(bind=engine)
