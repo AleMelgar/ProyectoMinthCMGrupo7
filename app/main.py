@@ -1,7 +1,10 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+from pathlib import Path
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.db.database import Base, engine
 from app.api import evaluations, goals, kpis, results, reports, minthcm_proxy
 
@@ -20,7 +23,10 @@ app.include_router(results.router, tags=["Resultados"])
 app.include_router(reports.router, tags=["Reportes"])
 app.include_router(minthcm_proxy.router, tags=["MintHCM"])
 
+STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 
 @app.get("/")
 def root():
-    return {"app": "PerformTrack", "version": "0.1.0", "status": "running"}
+    return FileResponse(STATIC_DIR / "index.html")

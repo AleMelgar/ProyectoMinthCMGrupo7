@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PerformTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        .sidebar { min-height: 100vh; background: #1565C0; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.8); border-radius: 8px; margin: 2px 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+        .sidebar .brand { color: #fff; font-size: 1.3rem; font-weight: 700; padding: 1.2rem; }
+        .card-stat { border-left: 4px solid; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .table th { font-size: 0.85rem; text-transform: uppercase; color: #666; }
+    </style>
+</head>
+<body class="bg-light">
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar d-flex flex-column p-0" style="width: 240px;">
+        <div class="brand"><i class="bi bi-bar-chart-line me-2"></i>PerformTrack</div>
+        <nav class="nav flex-column px-2">
+            <a class="nav-link active" href="#" data-section="dashboard"><i class="bi bi-house me-2"></i>Dashboard</a>
+            <a class="nav-link" href="#" data-section="periods"><i class="bi bi-calendar3 me-2"></i>Periodos</a>
+            <a class="nav-link" href="#" data-section="forms"><i class="bi bi-file-earmark-text me-2"></i>Formularios</a>
+            <a class="nav-link" href="#" data-section="goals"><i class="bi bi-bullseye me-2"></i>OKRs</a>
+            <a class="nav-link" href="#" data-section="employees"><i class="bi bi-people me-2"></i>Empleados</a>
+            <a class="nav-link" href="#" data-section="reports"><i class="bi bi-download me-2"></i>Reportes</a>
+        </nav>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-grow-1 p-4">
+
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="section active">
+            <h3 class="mb-4">Dashboard</h3>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card card-stat border-primary">
+                        <div class="card-body">
+                            <div class="text-muted small">Periodos Activos</div>
+                            <div class="fs-3 fw-bold" id="stat-periods">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stat border-success">
+                        <div class="card-body">
+                            <div class="text-muted small">Formularios</div>
+                            <div class="fs-3 fw-bold" id="stat-forms">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stat border-warning">
+                        <div class="card-body">
+                            <div class="text-muted small">OKRs Registrados</div>
+                            <div class="fs-3 fw-bold" id="stat-goals">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stat border-info">
+                        <div class="card-body">
+                            <div class="text-muted small">Empleados MintHCM</div>
+                            <div class="fs-3 fw-bold" id="stat-employees">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">Periodos Recientes</div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Nombre</th><th>Periodo</th><th>Inicio</th><th>Fin</th><th>Estado</th></tr></thead>
+                        <tbody id="dash-periods"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERIODOS -->
+        <div id="periods" class="section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Periodos de Evaluacion</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPeriod"><i class="bi bi-plus-lg me-1"></i>Nuevo Periodo</button>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Periodo</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Acciones</th></tr></thead>
+                        <tbody id="periods-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORMULARIOS -->
+        <div id="forms" class="section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Formularios de Evaluacion</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalForm"><i class="bi bi-plus-lg me-1"></i>Nuevo Formulario</button>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Periodo</th><th>Escala</th><th>Secciones</th><th>Acciones</th></tr></thead>
+                        <tbody id="forms-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- OKRs -->
+        <div id="goals" class="section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Objetivos OKR</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalGoal"><i class="bi bi-plus-lg me-1"></i>Nuevo OKR</button>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Filtrar por empleado (ID)</label>
+                <div class="input-group" style="max-width:400px;">
+                    <input type="text" class="form-control" id="goal-filter-emp" placeholder="ej: 1">
+                    <button class="btn btn-outline-primary" onclick="loadGoals()">Buscar</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>ID</th><th>Empleado</th><th>Objetivo OKR</th><th>Peso</th><th>Progreso</th><th>Fecha Limite</th><th>Acciones</th></tr></thead>
+                        <tbody id="goals-table"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="goal-summary" class="card mt-3" style="display:none;">
+                <div class="card-header">Resumen OKR</div>
+                <div class="card-body" id="goal-summary-body"></div>
+            </div>
+        </div>
+
+        <!-- EMPLEADOS -->
+        <div id="employees" class="section">
+            <h3 class="mb-4">Empleados (desde MintHCM)</h3>
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Cargo</th><th>Departamento</th><th>Estado</th></tr></thead>
+                        <tbody id="employees-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORTES -->
+        <div id="reports" class="section">
+            <h3 class="mb-4">Generar Reportes</h3>
+            <div class="card" style="max-width:500px;">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Seleccionar formulario</label>
+                        <select class="form-select" id="report-form-select"></select>
+                    </div>
+                    <div class="mb-3">
+                        <button class="btn btn-outline-primary me-2" onclick="calcKpis()"><i class="bi bi-calculator me-1"></i>Calcular KPIs</button>
+                        <span id="kpi-result" class="text-success small"></span>
+                    </div>
+                    <hr>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-danger" onclick="downloadReport('pdf')"><i class="bi bi-file-earmark-pdf me-1"></i>Descargar PDF</button>
+                        <button class="btn btn-success" onclick="downloadReport('excel')"><i class="bi bi-file-earmark-excel me-1"></i>Descargar Excel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal: Nuevo Periodo -->
+<div class="modal fade" id="modalPeriod" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Nuevo Periodo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Nombre</label><input type="text" class="form-control" id="p-nombre"></div>
+                <div class="mb-3"><label class="form-label">Periodo</label>
+                    <select class="form-select" id="p-periodo"><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option><option>Anual</option></select>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3"><label class="form-label">Fecha Inicio</label><input type="date" class="form-control" id="p-inicio"></div>
+                    <div class="col-6 mb-3"><label class="form-label">Fecha Fin</label><input type="date" class="form-control" id="p-fin"></div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="createPeriod()">Crear</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nuevo Formulario -->
+<div class="modal fade" id="modalForm" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Nuevo Formulario</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Periodo</label><select class="form-select" id="f-period"></select></div>
+                <div class="mb-3"><label class="form-label">Nombre</label><input type="text" class="form-control" id="f-nombre"></div>
+                <div class="mb-3"><label class="form-label">Descripcion</label><textarea class="form-control" id="f-desc" rows="2"></textarea></div>
+                <div class="row">
+                    <div class="col-6 mb-3"><label class="form-label">Escala Min</label><input type="number" class="form-control" id="f-min" value="1"></div>
+                    <div class="col-6 mb-3"><label class="form-label">Escala Max</label><input type="number" class="form-control" id="f-max" value="5"></div>
+                </div>
+                <hr>
+                <h6>Secciones</h6>
+                <div id="f-sections">
+                    <div class="row g-2 mb-2 section-row">
+                        <div class="col-5"><input type="text" class="form-control form-control-sm" placeholder="Nombre" value="Competencias"></div>
+                        <div class="col-3"><input type="number" class="form-control form-control-sm" placeholder="Peso %" value="30"></div>
+                        <div class="col-2"><input type="number" class="form-control form-control-sm" placeholder="Orden" value="1"></div>
+                        <div class="col-2"><button class="btn btn-sm btn-outline-danger" onclick="this.closest('.section-row').remove()"><i class="bi bi-trash"></i></button></div>
+                    </div>
+                    <div class="row g-2 mb-2 section-row">
+                        <div class="col-5"><input type="text" class="form-control form-control-sm" placeholder="Nombre" value="OKRs"></div>
+                        <div class="col-3"><input type="number" class="form-control form-control-sm" placeholder="Peso %" value="50"></div>
+                        <div class="col-2"><input type="number" class="form-control form-control-sm" placeholder="Orden" value="2"></div>
+                        <div class="col-2"><button class="btn btn-sm btn-outline-danger" onclick="this.closest('.section-row').remove()"><i class="bi bi-trash"></i></button></div>
+                    </div>
+                    <div class="row g-2 mb-2 section-row">
+                        <div class="col-5"><input type="text" class="form-control form-control-sm" placeholder="Nombre" value="KPIs"></div>
+                        <div class="col-3"><input type="number" class="form-control form-control-sm" placeholder="Peso %" value="20"></div>
+                        <div class="col-2"><input type="number" class="form-control form-control-sm" placeholder="Orden" value="3"></div>
+                        <div class="col-2"><button class="btn btn-sm btn-outline-danger" onclick="this.closest('.section-row').remove()"><i class="bi bi-trash"></i></button></div>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="addSectionRow()"><i class="bi bi-plus me-1"></i>Agregar Seccion</button>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="createForm()">Crear</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nuevo OKR -->
+<div class="modal fade" id="modalGoal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Nuevo Objetivo OKR</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Empleado ID</label><input type="text" class="form-control" id="g-emp" placeholder="ej: 1"></div>
+                <div class="mb-3"><label class="form-label">Periodo</label><select class="form-select" id="g-period"></select></div>
+                <div class="mb-3"><label class="form-label">Descripcion</label><input type="text" class="form-control" id="g-desc"></div>
+                <div class="mb-3"><label class="form-label">Objetivo OKR</label><input type="text" class="form-control" id="g-okr"></div>
+                <div class="row">
+                    <div class="col-6 mb-3"><label class="form-label">Peso (%)</label><input type="number" class="form-control" id="g-peso" value="50"></div>
+                    <div class="col-6 mb-3"><label class="form-label">Fecha Limite</label><input type="date" class="form-control" id="g-fecha"></div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="createGoal()">Crear</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Actualizar Progreso -->
+<div class="modal fade" id="modalProgress" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Actualizar Progreso</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <label class="form-label">Progreso (%)</label>
+                <input type="number" class="form-control" id="prog-value" min="0" max="100" step="0.1">
+                <input type="hidden" id="prog-goal-id">
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="updateProgress()">Guardar</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Asignar Empleados -->
+<div class="modal fade" id="modalAssign" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Asignar Empleados</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p class="text-muted small">Ingrese los IDs de empleados separados por coma</p>
+                <input type="text" class="form-control" id="assign-ids" placeholder="ej: 1, 2, 3">
+                <input type="hidden" id="assign-form-id">
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="assignEmployees()">Asignar</button></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '';
+
+// --- Navigation ---
+document.querySelectorAll('[data-section]').forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(link.dataset.section).classList.add('active');
+        link.classList.add('active');
+        loadSection(link.dataset.section);
+    });
+});
+
+function loadSection(name) {
+    if (name === 'dashboard') loadDashboard();
+    else if (name === 'periods') loadPeriods();
+    else if (name === 'forms') loadForms();
+    else if (name === 'goals') loadGoals();
+    else if (name === 'employees') loadEmployees();
+    else if (name === 'reports') loadReportOptions();
+}
+
+// --- API helpers ---
+async function api(path, opts = {}) {
+    const res = await fetch(API + path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...opts,
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    return res.json();
+}
+
+function badge(estado) {
+    const cls = { borrador: 'secondary', activo: 'success', cerrado: 'dark' };
+    return `<span class="badge bg-${cls[estado] || 'secondary'}">${estado}</span>`;
+}
+
+// --- Dashboard ---
+async function loadDashboard() {
+    const [periods, forms, emps] = await Promise.all([
+        api('/periods/'), api('/evaluations/'), api('/minthcm/employees'),
+    ]);
+    document.getElementById('stat-periods').textContent = periods.filter(p => p.estado === 'activo').length;
+    document.getElementById('stat-forms').textContent = forms.length;
+    document.getElementById('stat-employees').textContent = emps.total || 0;
+
+    const tbody = document.getElementById('dash-periods');
+    tbody.innerHTML = periods.slice(0, 5).map(p => `
+        <tr><td>${p.nombre}</td><td>${p.periodo}</td><td>${p.fecha_inicio}</td><td>${p.fecha_fin}</td><td>${badge(p.estado)}</td></tr>
+    `).join('');
+
+    // Count goals across all periods (use first period if exists)
+    let goalCount = 0;
+    for (const p of periods) {
+        const goals = await api(`/goals/period/${p.id}`);
+        goalCount += goals.length;
+    }
+    document.getElementById('stat-goals').textContent = goalCount;
+}
+
+// --- Periods ---
+async function loadPeriods() {
+    const periods = await api('/periods/');
+    document.getElementById('periods-table').innerHTML = periods.map(p => `
+        <tr>
+            <td>${p.id}</td><td>${p.nombre}</td><td>${p.periodo}</td>
+            <td>${p.fecha_inicio}</td><td>${p.fecha_fin}</td><td>${badge(p.estado)}</td>
+            <td>
+                ${p.estado === 'borrador' ? `<button class="btn btn-sm btn-outline-success" onclick="activatePeriod(${p.id})">Activar</button>` : ''}
+                ${p.estado === 'activo' ? `<button class="btn btn-sm btn-outline-dark" onclick="closePeriod(${p.id})">Cerrar</button>` : ''}
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function createPeriod() {
+    await api('/periods/', { method: 'POST', body: {
+        nombre: document.getElementById('p-nombre').value,
+        periodo: document.getElementById('p-periodo').value,
+        fecha_inicio: document.getElementById('p-inicio').value,
+        fecha_fin: document.getElementById('p-fin').value,
+    }});
+    bootstrap.Modal.getInstance(document.getElementById('modalPeriod')).hide();
+    loadPeriods();
+}
+
+async function activatePeriod(id) { await api(`/periods/${id}/activate`, { method: 'PATCH' }); loadPeriods(); }
+async function closePeriod(id) { await api(`/periods/${id}/close`, { method: 'PATCH' }); loadPeriods(); }
+
+// --- Forms ---
+async function loadForms() {
+    const [forms, periods] = await Promise.all([api('/evaluations/'), api('/periods/')]);
+    const pmap = Object.fromEntries(periods.map(p => [p.id, p.nombre]));
+
+    document.getElementById('forms-table').innerHTML = forms.map(f => `
+        <tr>
+            <td>${f.id}</td><td>${f.nombre}</td><td>${pmap[f.period_id] || f.period_id}</td>
+            <td>${f.escala_min}-${f.escala_max}</td>
+            <td>${f.sections.map(s => `${s.nombre} (${s.peso}%)`).join(', ')}</td>
+            <td><button class="btn btn-sm btn-outline-primary" onclick="openAssign(${f.id})"><i class="bi bi-person-plus me-1"></i>Asignar</button></td>
+        </tr>
+    `).join('');
+
+    // Populate period selects
+    const opts = periods.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+    document.getElementById('f-period').innerHTML = opts;
+}
+
+function addSectionRow() {
+    const div = document.getElementById('f-sections');
+    const row = document.createElement('div');
+    row.className = 'row g-2 mb-2 section-row';
+    row.innerHTML = `
+        <div class="col-5"><input type="text" class="form-control form-control-sm" placeholder="Nombre"></div>
+        <div class="col-3"><input type="number" class="form-control form-control-sm" placeholder="Peso %"></div>
+        <div class="col-2"><input type="number" class="form-control form-control-sm" placeholder="Orden"></div>
+        <div class="col-2"><button class="btn btn-sm btn-outline-danger" onclick="this.closest('.section-row').remove()"><i class="bi bi-trash"></i></button></div>
+    `;
+    div.appendChild(row);
+}
+
+async function createForm() {
+    const sections = [];
+    document.querySelectorAll('#f-sections .section-row').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        if (inputs[0].value) {
+            sections.push({ nombre: inputs[0].value, peso: parseFloat(inputs[1].value) || 0, orden: parseInt(inputs[2].value) || 0 });
+        }
+    });
+    await api('/evaluations/', { method: 'POST', body: {
+        period_id: parseInt(document.getElementById('f-period').value),
+        nombre: document.getElementById('f-nombre').value,
+        descripcion: document.getElementById('f-desc').value || null,
+        escala_min: parseInt(document.getElementById('f-min').value),
+        escala_max: parseInt(document.getElementById('f-max').value),
+        sections,
+    }});
+    bootstrap.Modal.getInstance(document.getElementById('modalForm')).hide();
+    loadForms();
+}
+
+function openAssign(formId) {
+    document.getElementById('assign-form-id').value = formId;
+    document.getElementById('assign-ids').value = '';
+    new bootstrap.Modal(document.getElementById('modalAssign')).show();
+}
+
+async function assignEmployees() {
+    const formId = document.getElementById('assign-form-id').value;
+    const ids = document.getElementById('assign-ids').value.split(',').map(s => s.trim()).filter(Boolean);
+    await api(`/evaluations/${formId}/assign`, { method: 'PUT', body: { employee_ids: ids } });
+    bootstrap.Modal.getInstance(document.getElementById('modalAssign')).hide();
+    alert('Empleados asignados correctamente');
+}
+
+// --- Goals ---
+async function loadGoals() {
+    const empId = document.getElementById('goal-filter-emp').value.trim();
+    let goals = [];
+    if (empId) {
+        goals = await api(`/goals/employee/${empId}`);
+        // Load summary
+        const summary = await api(`/goals/employee/${empId}/summary`);
+        const sumDiv = document.getElementById('goal-summary');
+        if (summary.total_goals > 0) {
+            sumDiv.style.display = 'block';
+            document.getElementById('goal-summary-body').innerHTML = `
+                <div class="row">
+                    <div class="col-4"><strong>Total OKRs:</strong> ${summary.total_goals}</div>
+                    <div class="col-4"><strong>Progreso Ponderado:</strong>
+                        <span class="badge bg-${summary.progreso_ponderado >= 70 ? 'success' : summary.progreso_ponderado >= 40 ? 'warning' : 'danger'} fs-6">
+                            ${summary.progreso_ponderado}%
+                        </span>
+                    </div>
+                </div>
+            `;
+        } else { sumDiv.style.display = 'none'; }
+    } else {
+        // Load all goals from all periods
+        const periods = await api('/periods/');
+        for (const p of periods) {
+            const pg = await api(`/goals/period/${p.id}`);
+            goals = goals.concat(pg);
+        }
+        document.getElementById('goal-summary').style.display = 'none';
+    }
+
+    document.getElementById('goals-table').innerHTML = goals.map(g => `
+        <tr>
+            <td>${g.id}</td><td>${g.employee_id}</td><td>${g.objetivo_okr}</td>
+            <td>${g.peso}%</td>
+            <td>
+                <div class="progress" style="min-width:80px;">
+                    <div class="progress-bar ${g.progreso >= 70 ? 'bg-success' : g.progreso >= 40 ? 'bg-warning' : 'bg-danger'}"
+                         style="width:${g.progreso}%">${g.progreso}%</div>
+                </div>
+            </td>
+            <td>${g.fecha_limite}</td>
+            <td><button class="btn btn-sm btn-outline-primary" onclick="openProgress(${g.id}, ${g.progreso})"><i class="bi bi-pencil"></i></button></td>
+        </tr>
+    `).join('');
+
+    // Populate period selects for goal modal
+    const periods2 = await api('/periods/');
+    document.getElementById('g-period').innerHTML = periods2.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+}
+
+async function createGoal() {
+    await api('/goals/', { method: 'POST', body: {
+        employee_id: document.getElementById('g-emp').value,
+        period_id: parseInt(document.getElementById('g-period').value),
+        descripcion: document.getElementById('g-desc').value,
+        objetivo_okr: document.getElementById('g-okr').value,
+        peso: parseFloat(document.getElementById('g-peso').value),
+        fecha_limite: document.getElementById('g-fecha').value,
+    }});
+    bootstrap.Modal.getInstance(document.getElementById('modalGoal')).hide();
+    loadGoals();
+}
+
+function openProgress(goalId, current) {
+    document.getElementById('prog-goal-id').value = goalId;
+    document.getElementById('prog-value').value = current;
+    new bootstrap.Modal(document.getElementById('modalProgress')).show();
+}
+
+async function updateProgress() {
+    const id = document.getElementById('prog-goal-id').value;
+    const val = parseFloat(document.getElementById('prog-value').value);
+    await api(`/goals/${id}/progress`, { method: 'PATCH', body: { progreso: val } });
+    bootstrap.Modal.getInstance(document.getElementById('modalProgress')).hide();
+    loadGoals();
+}
+
+// --- Employees ---
+async function loadEmployees() {
+    const data = await api('/minthcm/employees');
+    document.getElementById('employees-table').innerHTML = (data.employees || []).map(e => `
+        <tr><td>${e.id}</td><td>${e.full_name}</td><td>${e.title || '—'}</td><td>${e.department || '—'}</td>
+        <td><span class="badge bg-${e.employee_status === 'Active' ? 'success' : 'secondary'}">${e.employee_status}</span></td></tr>
+    `).join('');
+}
+
+// --- Reports ---
+async function loadReportOptions() {
+    const forms = await api('/evaluations/');
+    document.getElementById('report-form-select').innerHTML = forms.map(f => `<option value="${f.id}">${f.nombre} (ID: ${f.id})</option>`).join('');
+    document.getElementById('kpi-result').textContent = '';
+}
+
+async function calcKpis() {
+    const formId = document.getElementById('report-form-select').value;
+    const data = await api(`/kpis/calculate?form_id=${formId}`, { method: 'POST' });
+    document.getElementById('kpi-result').textContent = `${data.kpis_calculados} KPIs calculados`;
+}
+
+function downloadReport(type) {
+    const formId = document.getElementById('report-form-select').value;
+    window.open(`${API}/reports/${formId}/${type}`, '_blank');
+}
+
+// --- Init ---
+loadDashboard();
+</script>
+</body>
+</html>
