@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from sqlalchemy import Integer, String, Float, Text, Date, DateTime, ForeignKey
+from sqlalchemy import Integer, String, Float, Text, Date, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
@@ -32,6 +32,7 @@ class EvaluationForm(Base):
 
     period: Mapped["EvaluationPeriod"] = relationship(back_populates="forms")
     sections: Mapped[list["FormSection"]] = relationship(back_populates="form", cascade="all, delete-orphan")
+    assignments: Mapped[list["FormAssignment"]] = relationship(back_populates="form", cascade="all, delete-orphan")
     kpi_records: Mapped[list["KPIRecord"]] = relationship(back_populates="form", cascade="all, delete-orphan")
     results: Mapped[list["EvaluationResult"]] = relationship(back_populates="form", cascade="all, delete-orphan")
 
@@ -46,6 +47,18 @@ class FormSection(Base):
     orden: Mapped[int] = mapped_column(Integer, default=0)
 
     form: Mapped["EvaluationForm"] = relationship(back_populates="sections")
+
+
+class FormAssignment(Base):
+    __tablename__ = "form_assignments"
+    __table_args__ = (UniqueConstraint("form_id", "employee_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    form_id: Mapped[int] = mapped_column(Integer, ForeignKey("evaluation_forms.id"))
+    employee_id: Mapped[str] = mapped_column(String(100))
+    asignado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    form: Mapped["EvaluationForm"] = relationship(back_populates="assignments")
 
 
 class EmployeeGoal(Base):

@@ -58,6 +58,20 @@ class FormResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# --- FormAssignment ---
+
+class AssignEmployeesRequest(BaseModel):
+    employee_ids: list[str]
+
+class AssignmentResponse(BaseModel):
+    id: int
+    form_id: int
+    employee_id: str
+    asignado_en: datetime
+
+    model_config = {"from_attributes": True}
+
+
 # --- EmployeeGoal ---
 
 class GoalCreate(BaseModel):

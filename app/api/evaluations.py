@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.db.models import EvaluationPeriod, EvaluationForm, FormSection
+from app.db.models import EvaluationPeriod, EvaluationForm, FormSection, FormAssignment
 from app.models.schemas import (
     PeriodCreate, PeriodResponse,
     FormCreate, FormResponse,
+    AssignEmployeesRequest, AssignmentResponse,
 )
 
 router = APIRouter()
@@ -77,6 +78,34 @@ def create_form(data: FormCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(form)
     return form
+
+
+@router.put("/evaluations/{form_id}/assign", response_model=list[AssignmentResponse])
+def assign_employees(form_id: int, data: AssignEmployeesRequest, db: Session = Depends(get_db)):
+    form = db.query(EvaluationForm).filter(EvaluationForm.id == form_id).first()
+    if not form:
+        raise HTTPException(status_code=404, detail="Formulario no encontrado")
+
+    created = []
+    for emp_id in data.employee_ids:
+        exists = db.query(FormAssignment).filter(
+            FormAssignment.form_id == form_id,
+            FormAssignment.employee_id == emp_id,
+        ).first()
+        if not exists:
+            assignment = FormAssignment(form_id=form_id, employee_id=emp_id)
+            db.add(assignment)
+            created.append(assignment)
+
+    db.commit()
+    for a in created:
+        db.refresh(a)
+    return created
+
+
+@router.get("/evaluations/{form_id}/assignments", response_model=list[AssignmentResponse])
+def get_assignments(form_id: int, db: Session = Depends(get_db)):
+    return db.query(FormAssignment).filter(FormAssignment.form_id == form_id).all()
 
 
 @router.get("/evaluations/{form_id}", response_model=FormResponse)
